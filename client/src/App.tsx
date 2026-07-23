@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import SessionRoom from './pages/SessionRoom';
 import JoinSession from './pages/JoinSession';
 import Leaderboard from './pages/Leaderboard';
+import Players from './pages/Players';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Route path="/session/:id" element={<SessionRoom />} />
       <Route path="/join/:id" element={<JoinSession />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/players" element={<Players />} />
     </Routes>
   );
 }

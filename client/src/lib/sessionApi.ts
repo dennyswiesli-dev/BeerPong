@@ -43,9 +43,6 @@ export const coinToss = (id: string) => mutate(id, (s) => logic.coinToss(s));
 export const hitCup = (id: string, targetTeamId: string, cupId: string) =>
   mutate(id, (s) => logic.hitCup(s, targetTeamId, cupId));
 
-export const missShot = (id: string, shootingTeamId: string) =>
-  mutate(id, (s) => logic.missShot(s, shootingTeamId));
-
 export const reformCups = (id: string, teamId: string, formation: number[]) =>
   mutate(id, (s) => logic.reformCups(s, teamId, formation));
 

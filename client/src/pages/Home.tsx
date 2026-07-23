@@ -22,10 +22,11 @@ export default function Home() {
   return (
     <div className="min-h-svh flex flex-col items-center justify-center px-6 py-12 text-center">
       <div className="animate-float-slow text-7xl mb-4">🍺</div>
-      <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-2">
-        Beer Pong Arena
+      <h1 className="text-4xl sm:text-5xl font-black italic tracking-tight mb-2">
+        <span className="text-sky-400">Beer</span> <span className="text-white">Pong</span>{' '}
+        <span className="text-red-500">Arena</span>
       </h1>
-      <p className="text-purple-200/80 mb-10 max-w-md">
+      <p className="text-white/60 mb-10 max-w-md">
         Erstelle ein neues Match, lade dein Team per QR-Code ein und tracke jeden Treffer live auf allen Geräten.
       </p>
 
@@ -38,8 +39,8 @@ export default function Home() {
               onClick={() => setLayout(n as BoardLayout)}
               className={`px-5 py-2 rounded-xl font-semibold transition ${
                 layout === n
-                  ? 'bg-amber-400 text-purple-950 shadow-lg shadow-amber-400/30'
-                  : 'bg-white/10 text-purple-100 hover:bg-white/20'
+                  ? 'bg-gradient-to-r from-sky-500 to-red-600 text-white shadow-lg shadow-red-500/30'
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
               }`}
             >
               {n} Becher
@@ -52,23 +53,28 @@ export default function Home() {
             type="checkbox"
             checked={singleDevice}
             onChange={(e) => setSingleDevice(e.target.checked)}
-            className="h-5 w-5 accent-amber-400"
+            className="h-5 w-5 accent-red-500"
           />
-          <span className="text-sm text-purple-100">Ein Gerät für beide Teams</span>
+          <span className="text-sm text-white/80">Ein Gerät für beide Teams</span>
         </label>
 
         <button
           onClick={handleCreate}
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-pink-500 text-purple-950 font-bold text-lg shadow-lg shadow-pink-500/30 hover:scale-[1.02] active:scale-95 transition disabled:opacity-50"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-red-600 text-white font-bold text-lg shadow-lg shadow-red-500/30 hover:scale-[1.02] active:scale-95 transition disabled:opacity-50"
         >
           {loading ? 'Erstelle Match...' : 'Neues Match starten 🎉'}
         </button>
       </div>
 
-      <Link to="/leaderboard" className="mt-8 text-purple-300 hover:text-amber-300 underline underline-offset-4">
-        🏆 Leaderboard ansehen
-      </Link>
+      <div className="mt-8 flex items-center gap-6 text-sm">
+        <Link to="/leaderboard" className="text-white/60 hover:text-sky-400 underline underline-offset-4">
+          🏆 Leaderboard
+        </Link>
+        <Link to="/players" className="text-white/60 hover:text-red-500 underline underline-offset-4">
+          👥 Spieler verwalten
+        </Link>
+      </div>
     </div>
   );
 }

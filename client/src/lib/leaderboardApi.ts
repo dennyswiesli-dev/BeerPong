@@ -15,6 +15,10 @@ async function ensurePlayer(name: string) {
   return ref;
 }
 
+export async function registerPlayer(name: string) {
+  await ensurePlayer(name);
+}
+
 export async function recordShot(name: string, hit: boolean) {
   const ref = await ensurePlayer(name);
   await updateDoc(ref, { shotsTaken: increment(1), ...(hit ? { cupsHit: increment(1) } : {}) });

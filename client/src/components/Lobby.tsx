@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import * as sessionApi from '../lib/sessionApi';
+import { getLeaderboard } from '../lib/leaderboardApi';
 import { teamPalette } from '../lib/teamColors';
 import type { BoardLayout, SessionState } from '../types';
 
@@ -10,7 +11,12 @@ interface Props {
 
 export default function Lobby({ session }: Props) {
   const [names, setNames] = useState<Record<string, string>>({});
+  const [roster, setRoster] = useState<string[]>([]);
   const joinUrl = `${window.location.origin}${window.location.pathname}#/join/${session.id}`;
+
+  useEffect(() => {
+    getLeaderboard().then((players) => setRoster(players.map((p) => p.name)));
+  }, []);
 
   function addPlayer(teamId: string) {
     const name = names[teamId]?.trim();
@@ -32,7 +38,15 @@ export default function Lobby({ session }: Props) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
       <h1 className="text-3xl font-bold text-center mb-1">Lobby</h1>
-      <p className="text-center text-purple-300 mb-8">Match-Code: <span className="font-mono text-amber-300">{session.id}</span></p>
+      <p className="text-center text-white/50 mb-8">
+        Match-Code: <span className="font-mono text-sky-400">{session.id}</span>
+      </p>
+
+      <datalist id="player-roster">
+        {roster.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-8">
         {session.teams.map((team) => (
@@ -44,9 +58,9 @@ export default function Lobby({ session }: Props) {
             />
             <ul className="space-y-1 mb-4 min-h-8">
               {team.players.map((p) => (
-                <li key={p} className="text-purple-100 text-sm">🙋 {p}</li>
+                <li key={p} className="text-white/80 text-sm">🙋 {p}</li>
               ))}
-              {team.players.length === 0 && <li className="text-purple-400 text-sm italic">Noch keine Spieler</li>}
+              {team.players.length === 0 && <li className="text-white/40 text-sm italic">Noch keine Spieler</li>}
             </ul>
             <div className="flex gap-2">
               <input
@@ -54,7 +68,8 @@ export default function Lobby({ session }: Props) {
                 onChange={(e) => setNames((prev) => ({ ...prev, [team.id]: e.target.value }))}
                 onKeyDown={(e) => e.key === 'Enter' && addPlayer(team.id)}
                 placeholder="Name hinzufügen"
-                className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none focus:border-amber-400 text-sm"
+                list="player-roster"
+                className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none focus:border-sky-400 text-sm"
               />
               <button
                 onClick={() => addPlayer(team.id)}
@@ -76,7 +91,9 @@ export default function Lobby({ session }: Props) {
                 key={n}
                 onClick={() => setLayout(n as BoardLayout)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  session.layout === n ? 'bg-amber-400 text-purple-950' : 'bg-white/10 hover:bg-white/20'
+                  session.layout === n
+                    ? 'bg-gradient-to-r from-sky-500 to-red-600 text-white'
+                    : 'bg-white/10 hover:bg-white/20'
                 }`}
               >
                 {n} Becher
@@ -86,7 +103,7 @@ export default function Lobby({ session }: Props) {
         </div>
 
         <div className="text-center">
-          <p className="text-xs text-purple-300 mb-2">Per QR beitreten</p>
+          <p className="text-xs text-white/50 mb-2">Per QR beitreten</p>
           <div className="bg-white p-2 rounded-lg inline-block">
             <QRCodeSVG value={joinUrl} size={110} />
           </div>
@@ -97,11 +114,11 @@ export default function Lobby({ session }: Props) {
         <button
           disabled={!canStart}
           onClick={() => sessionApi.coinToss(session.id)}
-          className="px-10 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-500 text-purple-950 font-bold text-xl shadow-xl shadow-pink-500/30 hover:scale-[1.03] active:scale-95 transition disabled:opacity-40"
+          className="px-10 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-red-600 text-white font-bold text-xl shadow-xl shadow-red-500/30 hover:scale-[1.03] active:scale-95 transition disabled:opacity-40"
         >
           🪙 Münze werfen &amp; Start
         </button>
-        {!canStart && <p className="text-sm text-purple-400 mt-2">Beide Teams brauchen mindestens einen Spieler.</p>}
+        {!canStart && <p className="text-sm text-white/40 mt-2">Beide Teams brauchen mindestens einen Spieler.</p>}
       </div>
     </div>
   );

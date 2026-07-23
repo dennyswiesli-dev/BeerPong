@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { rematch, resetGame } from '../lib/sessionApi';
 import type { SessionState } from '../types';
@@ -50,6 +51,12 @@ export default function WinOverlay({ session, winnerName, onClose }: Props) {
         >
           Zurück zur Lobby
         </button>
+        <Link
+          to="/leaderboard"
+          className="px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition"
+        >
+          🏆 Leaderboard
+        </Link>
       </div>
     </div>
   );

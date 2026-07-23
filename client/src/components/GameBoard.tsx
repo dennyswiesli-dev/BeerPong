@@ -28,12 +28,6 @@ export default function GameBoard({ session }: Props) {
     }
   }
 
-  async function handleMiss() {
-    if (!currentTeam) return;
-    await sessionApi.missShot(session.id, currentTeam.id);
-    if (effectiveShooter) await leaderboardApi.recordShot(effectiveShooter, false);
-  }
-
   function applyFormation(teamId: string, rows: number[]) {
     sessionApi.reformCups(session.id, teamId, rows);
     setFormationPickerFor(null);
@@ -131,12 +125,6 @@ export default function GameBoard({ session }: Props) {
               ))}
             </select>
           )}
-          <button
-            onClick={handleMiss}
-            className="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-semibold"
-          >
-            ❌ Wurf daneben
-          </button>
         </div>
       )}
 

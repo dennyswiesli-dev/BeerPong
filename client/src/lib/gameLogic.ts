@@ -1,6 +1,6 @@
 import type { BoardLayout, Cup, LogEntry, SessionState, Team } from '../types';
 import { triangleRows } from './formations';
-import { hitSayings, missSayings, pick, reformSayings, streakSayings, winSayings } from './sayings';
+import { hitSayings, pick, reformSayings, streakSayings, winSayings } from './sayings';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -127,18 +127,6 @@ export function hitCup(session: SessionState, targetTeamId: string, cupId: strin
     next.currentTeam = targetTeamId;
   }
 
-  return next;
-}
-
-export function missShot(session: SessionState, shootingTeamId: string): SessionState {
-  const next = clone(session);
-  const shootingTeam = next.teams.find((t) => t.id === shootingTeamId);
-  const opponent = next.teams.find((t) => t.id !== shootingTeamId);
-  if (!shootingTeam || !opponent) return session;
-  next.streak = { teamId: null, count: 0 };
-  next.currentTeam = opponent.id;
-  addLog(next, `${shootingTeam.name} verwirft den Wurf.`, 'miss');
-  say(next, pick(missSayings));
   return next;
 }
 

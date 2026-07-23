@@ -14,13 +14,6 @@ export const streakSayings: Record<number, string[]> = {
   ],
 };
 
-export const missSayings = [
-  'Autsch, das war nix. 🙈',
-  'Der Becher lebt noch einen Tag länger.',
-  'Nächstes Mal vielleicht, Champion.',
-  'Da war wohl zu viel Bier im Spiel schon 🍻',
-];
-
 export const hitSayings = [
   'Reingelegt! 🎯',
   'Sauber getroffen! 🍺',

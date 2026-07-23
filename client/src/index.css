@@ -11,8 +11,11 @@ html, body, #root {
 
 body {
   font-family: 'Poppins', system-ui, 'Segoe UI', Roboto, sans-serif;
-  background: radial-gradient(circle at 20% 0%, #2d1b4e 0%, #150c2a 45%, #0a0614 100%);
-  color: #f3f0ff;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(220, 38, 38, 0.35) 0%, transparent 45%),
+    #050507;
+  color: #f5f5f7;
   min-height: 100svh;
 }
 
