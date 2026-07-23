@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import * as sessionApi from '../lib/sessionApi';
 import { getLeaderboard } from '../lib/leaderboardApi';
@@ -13,7 +14,7 @@ interface Props {
 const TEAM_ICONS = ['🔵', '🔴', '🍺', '🍻', '🏆', '🔥', '⚡', '💀', '🐺', '🦅', '🎯', '👑'];
 
 export default function Lobby({ session }: Props) {
-  const [names, setNames] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<Record<string, string>>({});
   const [roster, setRoster] = useState<string[]>([]);
   const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
   const joinUrl = `${window.location.origin}${window.location.pathname}#/join/${session.id}`;
@@ -22,11 +23,14 @@ export default function Lobby({ session }: Props) {
     getLeaderboard().then((players) => setRoster(players.map((p) => p.name)));
   }, []);
 
+  const assigned = new Set([...session.teams[0].players, ...session.teams[1].players]);
+  const available = roster.filter((n) => !assigned.has(n));
+
   function addPlayer(teamId: string) {
-    const name = names[teamId]?.trim();
+    const name = selected[teamId];
     if (!name) return;
     sessionApi.addPlayer(session.id, teamId, name);
-    setNames((prev) => ({ ...prev, [teamId]: '' }));
+    setSelected((prev) => ({ ...prev, [teamId]: '' }));
   }
 
   function renameTeam(teamId: string, name: string) {
@@ -59,12 +63,6 @@ export default function Lobby({ session }: Props) {
       <p className="text-center text-white/50 mb-8">
         Match-Code: <span className="font-mono text-sky-400">{session.id}</span>
       </p>
-
-      <datalist id="player-roster">
-        {roster.map((n) => (
-          <option key={n} value={n} />
-        ))}
-      </datalist>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-4">
         {session.teams.map((team) => (
@@ -105,17 +103,22 @@ export default function Lobby({ session }: Props) {
               {team.players.length === 0 && <li className="text-white/40 text-sm italic">Noch keine Spieler</li>}
             </ul>
             <div className="flex gap-2">
-              <input
-                value={names[team.id] ?? ''}
-                onChange={(e) => setNames((prev) => ({ ...prev, [team.id]: e.target.value }))}
-                onKeyDown={(e) => e.key === 'Enter' && addPlayer(team.id)}
-                placeholder="Name hinzufügen"
-                list="player-roster"
+              <select
+                value={selected[team.id] ?? ''}
+                onChange={(e) => setSelected((prev) => ({ ...prev, [team.id]: e.target.value }))}
                 className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none focus:border-sky-400 text-sm"
-              />
+              >
+                <option value="" className="text-black">Spieler wählen…</option>
+                {available.map((n) => (
+                  <option key={n} value={n} className="text-black">
+                    {n}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => addPlayer(team.id)}
-                className="px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-sm font-semibold"
+                disabled={!selected[team.id]}
+                className="px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-sm font-semibold disabled:opacity-30"
               >
                 +
               </button>
@@ -123,6 +126,18 @@ export default function Lobby({ session }: Props) {
           </div>
         ))}
       </div>
+
+      {roster.length === 0 && (
+        <p className="text-center text-white/50 text-sm mb-6">
+          Noch keine Spieler erfasst.{' '}
+          <Link to="/players" className="text-sky-400 underline underline-offset-4">
+            Jetzt Spieler anlegen
+          </Link>
+        </p>
+      )}
+      {roster.length > 0 && available.length === 0 && totalPlayers < roster.length && (
+        <p className="text-center text-white/40 text-sm mb-6">Alle erfassten Spieler sind bereits einem Team zugeteilt.</p>
+      )}
 
       {totalPlayers >= 2 && (
         <div className="text-center mb-8">

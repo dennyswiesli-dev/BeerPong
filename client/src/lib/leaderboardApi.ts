@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, increment, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, increment, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import type { PlayerStats } from '../types';
 
@@ -48,6 +48,10 @@ export async function recordStreak(name: string, streak: number) {
   const snap = await getDoc(ref);
   const current = (snap.data() as PlayerStats | undefined)?.bestStreak ?? 0;
   if (streak > current) await updateDoc(ref, { bestStreak: streak });
+}
+
+export async function deletePlayer(name: string) {
+  await deleteDoc(doc(playersCol, key(name)));
 }
 
 export async function getLeaderboard(): Promise<PlayerStats[]> {

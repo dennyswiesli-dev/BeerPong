@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getLeaderboard, registerPlayer } from '../lib/leaderboardApi';
+import { deletePlayer, getLeaderboard, registerPlayer } from '../lib/leaderboardApi';
 import type { PlayerStats } from '../types';
 
 export default function Players() {
@@ -8,6 +8,7 @@ export default function Players() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -33,6 +34,12 @@ export default function Players() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function confirmDelete(playerName: string) {
+    await deletePlayer(playerName);
+    setConfirmingDelete(null);
+    await load();
   }
 
   return (
@@ -72,16 +79,45 @@ export default function Players() {
       {!loading && players.length > 0 && (
         <ul className="space-y-2">
           {players.map((p) => (
-            <li key={p.name}>
-              <Link
-                to={`/players/${encodeURIComponent(p.name)}`}
-                className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 transition"
-              >
-                <span className="font-semibold">{p.name}</span>
-                <span className="text-xs text-white/50">
-                  {p.wins}S / {p.losses}N · {p.cupsHit} Treffer
-                </span>
-              </Link>
+            <li
+              key={p.name}
+              className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+            >
+              {confirmingDelete === p.name ? (
+                <div className="flex items-center justify-between w-full gap-2">
+                  <span className="text-sm text-white/80">{p.name} wirklich löschen?</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => confirmDelete(p.name)}
+                      className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold"
+                    >
+                      Löschen
+                    </button>
+                    <button
+                      onClick={() => setConfirmingDelete(null)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Link to={`/players/${encodeURIComponent(p.name)}`} className="flex-1 hover:text-sky-400 transition">
+                    <span className="font-semibold">{p.name}</span>
+                    <span className="text-xs text-white/50 ml-2">
+                      {p.wins}S / {p.losses}N · {p.cupsHit} Treffer
+                    </span>
+                  </Link>
+                  <button
+                    onClick={() => setConfirmingDelete(p.name)}
+                    title="Spieler löschen"
+                    className="text-white/30 hover:text-red-500 px-2 transition"
+                  >
+                    🗑️
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>
