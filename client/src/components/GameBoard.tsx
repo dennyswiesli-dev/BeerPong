@@ -11,16 +11,18 @@ interface Props {
 }
 
 export default function GameBoard({ session }: Props) {
-  const [shooter, setShooter] = useState<string>('');
+  const [shooters, setShooters] = useState<Record<string, string>>({});
   const [formationPickerFor, setFormationPickerFor] = useState<string | null>(null);
-  const currentTeam = session.teams.find((t) => t.id === session.currentTeam);
-  const shooterOptions = currentTeam?.players ?? [];
-  const effectiveShooter = shooter || shooterOptions[0] || '';
 
-  async function handleCupClick(targetTeamId: string, cupId: string) {
-    const next = await sessionApi.hitCup(session.id, targetTeamId, cupId);
+  function shooterFor(targetTeam: Team, opponent: Team | undefined): string {
+    return shooters[targetTeam.id] || opponent?.players[0] || '';
+  }
+
+  async function handleCupClick(targetTeam: Team, opponent: Team | undefined, cupId: string) {
+    const shooter = shooterFor(targetTeam, opponent);
+    const next = await sessionApi.hitCup(session.id, targetTeam.id, cupId);
     if (!next) return;
-    if (effectiveShooter) await leaderboardApi.recordShot(effectiveShooter, true);
+    if (shooter) await leaderboardApi.recordShot(shooter, true);
     if (next.status === 'finished' && next.winnerTeamId) {
       const winner = next.teams.find((t) => t.id === next.winnerTeamId);
       const loser = next.teams.find((t) => t.id !== next.winnerTeamId);
@@ -48,16 +50,13 @@ export default function GameBoard({ session }: Props) {
       <div className="grid sm:grid-cols-2">
         {session.teams.map((team) => {
           const palette = teamPalette[team.color];
-          const isCurrentTarget = currentTeam && team.id !== currentTeam.id;
+          const opponent = session.teams.find((t) => t.id !== team.id);
           const left = remaining(team);
           const options = formationOptions(left);
 
           return (
             <div key={team.id} className={`${palette.panelBg} px-4 py-6 min-h-[50vh] flex flex-col items-center`}>
-              <div className="flex items-center justify-between w-full max-w-xs mb-1">
-                <h3 className={`font-black italic text-xl tracking-tight ${palette.text}`}>{team.name}</h3>
-                {isCurrentTarget && <span className="text-xs px-2 py-0.5 rounded-full bg-white/15 animate-pulse">Am Zug</span>}
-              </div>
+              <h3 className={`font-black italic text-xl tracking-tight ${palette.text} mb-1`}>{team.name}</h3>
               <p className="text-xs text-white/50 mb-2">{team.players.join(', ') || '—'}</p>
 
               <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Becher übrig</p>
@@ -69,8 +68,25 @@ export default function GameBoard({ session }: Props) {
                 rows={team.formationRows}
                 interactive={session.status === 'playing'}
                 teamColor={team.color}
-                onCupClick={(cupId) => handleCupClick(team.id, cupId)}
+                onCupClick={(cupId) => handleCupClick(team, opponent, cupId)}
               />
+
+              {session.status === 'playing' && (opponent?.players.length ?? 0) > 0 && (
+                <div className="flex items-center gap-2 mt-2 w-full max-w-xs justify-center">
+                  <label className="text-xs text-white/40">Wirft:</label>
+                  <select
+                    value={shooterFor(team, opponent)}
+                    onChange={(e) => setShooters((prev) => ({ ...prev, [team.id]: e.target.value }))}
+                    className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-xs outline-none"
+                  >
+                    {opponent?.players.map((p) => (
+                      <option key={p} value={p} className="text-black">
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {formationPickerFor === team.id ? (
                 <div className="w-full max-w-xs mt-2 bg-black/30 rounded-xl p-3 space-y-2">
@@ -106,27 +122,6 @@ export default function GameBoard({ session }: Props) {
           );
         })}
       </div>
-
-      {session.status === 'playing' && currentTeam && (
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-white/5 border-t border-white/10 p-4">
-          <p className="text-sm text-purple-200">
-            Am Zug: <span className={`font-bold ${teamPalette[currentTeam.color].text}`}>{currentTeam.name}</span>
-          </p>
-          {shooterOptions.length > 0 && (
-            <select
-              value={effectiveShooter}
-              onChange={(e) => setShooter(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-sm outline-none"
-            >
-              {shooterOptions.map((p) => (
-                <option key={p} value={p} className="text-black">
-                  {p}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      )}
 
       <div className="max-w-5xl mx-auto mt-4 max-h-40 overflow-y-auto bg-white/5 border border-white/10 rounded-xl p-3 mx-4 text-sm text-purple-300 space-y-1">
         {session.log.map((entry) => (
