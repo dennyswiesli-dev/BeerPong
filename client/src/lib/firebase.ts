@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,4 +11,9 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+// Auto-detect long polling so the realtime connection also works behind
+// proxies/networks that break Firestore's default WebChannel streaming.
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
