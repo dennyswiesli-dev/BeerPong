@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { createSession } from '../lib/api';
+import { createSession } from '../lib/sessionApi';
 import type { BoardLayout } from '../types';
 
 export default function Home() {

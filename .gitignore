@@ -2,5 +2,7 @@ node_modules/
 dist/
 .DS_Store
 *.log
-server/data/
 client/.vite/
+.firebase/
+firebase-debug.log
+firestore-debug.log

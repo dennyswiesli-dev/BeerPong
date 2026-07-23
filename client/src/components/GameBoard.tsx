@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { socket } from '../lib/socket';
+import * as sessionApi from '../lib/sessionApi';
+import * as leaderboardApi from '../lib/leaderboardApi';
 import { CupBoard } from './CupBoard';
 import type { SessionState } from '../types';
 
@@ -13,17 +14,25 @@ export default function GameBoard({ session }: Props) {
   const shooterOptions = currentTeam?.players ?? [];
   const effectiveShooter = shooter || shooterOptions[0] || '';
 
-  function handleCupClick(targetTeamId: string, cupId: string) {
-    socket.emit('hitCup', { sessionId: session.id, targetTeamId, cupId, playerName: effectiveShooter || undefined });
+  async function handleCupClick(targetTeamId: string, cupId: string) {
+    const next = await sessionApi.hitCup(session.id, targetTeamId, cupId);
+    if (!next) return;
+    if (effectiveShooter) await leaderboardApi.recordShot(effectiveShooter, true);
+    if (next.status === 'finished' && next.winnerTeamId) {
+      const winner = next.teams.find((t) => t.id === next.winnerTeamId);
+      const loser = next.teams.find((t) => t.id !== next.winnerTeamId);
+      if (winner && loser) await leaderboardApi.recordGameResult(winner.players, loser.players);
+    }
   }
 
-  function handleMiss() {
+  async function handleMiss() {
     if (!currentTeam) return;
-    socket.emit('missShot', { sessionId: session.id, shootingTeamId: currentTeam.id, playerName: effectiveShooter || undefined });
+    await sessionApi.missShot(session.id, currentTeam.id);
+    if (effectiveShooter) await leaderboardApi.recordShot(effectiveShooter, false);
   }
 
   function handleReform(teamId: string) {
-    socket.emit('reformCups', { sessionId: session.id, teamId });
+    sessionApi.reformCups(session.id, teamId);
   }
 
   const remaining = (teamIdx: number) => session.teams[teamIdx].cups.filter((c) => !c.hit).length;

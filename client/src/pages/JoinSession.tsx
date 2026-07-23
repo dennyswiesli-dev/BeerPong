@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getSession } from '../lib/api';
-import { socket } from '../lib/socket';
+import { addPlayer, getSession } from '../lib/sessionApi';
 import type { SessionState } from '../types';
 
 export default function JoinSession() {
@@ -15,13 +14,13 @@ export default function JoinSession() {
   useEffect(() => {
     if (!id) return;
     getSession(id)
-      .then(setSession)
+      .then((s) => (s ? setSession(s) : setError('Dieses Match existiert nicht (mehr).')))
       .catch(() => setError('Dieses Match existiert nicht (mehr).'));
   }, [id]);
 
-  function join() {
+  async function join() {
     if (!id || !teamId || !name.trim()) return;
-    socket.emit('addPlayer', { sessionId: id, teamId, name: name.trim() });
+    await addPlayer(id, teamId, name.trim());
     navigate(`/session/${id}`);
   }
 

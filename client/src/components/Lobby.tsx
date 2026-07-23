@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { socket } from '../lib/socket';
+import * as sessionApi from '../lib/sessionApi';
 import type { BoardLayout, SessionState } from '../types';
 
 interface Props {
@@ -14,16 +14,16 @@ export default function Lobby({ session }: Props) {
   function addPlayer(teamId: string) {
     const name = names[teamId]?.trim();
     if (!name) return;
-    socket.emit('addPlayer', { sessionId: session.id, teamId, name });
+    sessionApi.addPlayer(session.id, teamId, name);
     setNames((prev) => ({ ...prev, [teamId]: '' }));
   }
 
   function renameTeam(teamId: string, name: string) {
-    socket.emit('renameTeam', { sessionId: session.id, teamId, name });
+    sessionApi.renameTeam(session.id, teamId, name);
   }
 
   function setLayout(layout: BoardLayout) {
-    socket.emit('setLayout', { sessionId: session.id, layout });
+    sessionApi.setLayout(session.id, layout);
   }
 
   const canStart = session.teams.every((t) => t.players.length > 0 || session.singleDeviceMode);
@@ -97,7 +97,7 @@ export default function Lobby({ session }: Props) {
       <div className="text-center">
         <button
           disabled={!canStart}
-          onClick={() => socket.emit('coinToss', { sessionId: session.id })}
+          onClick={() => sessionApi.coinToss(session.id)}
           className="px-10 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-500 text-purple-950 font-bold text-xl shadow-xl shadow-pink-500/30 hover:scale-[1.03] active:scale-95 transition disabled:opacity-40"
         >
           🪙 Münze werfen &amp; Start

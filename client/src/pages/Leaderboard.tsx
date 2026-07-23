@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getLeaderboard } from '../lib/api';
+import { getLeaderboard } from '../lib/leaderboardApi';
 import type { PlayerStats } from '../types';
 
 export default function Leaderboard() {

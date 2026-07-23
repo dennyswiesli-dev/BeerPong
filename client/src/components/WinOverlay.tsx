@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { socket } from '../lib/socket';
+import { resetGame } from '../lib/sessionApi';
 import type { SessionState } from '../types';
 
 interface Props {
@@ -21,7 +21,7 @@ export default function WinOverlay({ session, winnerName, onClose }: Props) {
   }, []);
 
   function playAgain() {
-    socket.emit('resetGame', { sessionId: session.id });
+    resetGame(session.id);
     onClose();
   }
 

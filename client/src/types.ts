@@ -41,6 +41,7 @@ export interface SessionState {
   winnerTeamId: string | null;
   streak: StreakState;
   log: LogEntry[];
+  saying: { id: string; text: string } | null;
 }
 
 export interface PlayerStats {
