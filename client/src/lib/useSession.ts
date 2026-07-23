@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { subscribeSession } from './sessionApi';
+import { playHitSound, playStreakSound } from './sound';
 import type { SessionState } from '../types';
 
 export function useSession(sessionId: string | undefined) {
@@ -7,6 +8,7 @@ export function useSession(sessionId: string | undefined) {
   const [saying, setSaying] = useState<string | null>(null);
   const [winnerName, setWinnerName] = useState<string | null>(null);
   const lastSayingId = useRef<string | null>(null);
+  const lastLogId = useRef<string | null>(null);
   const wasFinished = useRef(false);
   const sayingTimeout = useRef<number | undefined>(undefined);
 
@@ -15,6 +17,16 @@ export function useSession(sessionId: string | undefined) {
     const unsub = subscribeSession(sessionId, (s) => {
       if (!s) return;
       setSession(s);
+
+      const latestLog = s.log[0];
+      if (latestLog && latestLog.id !== lastLogId.current) {
+        const isFirstSync = lastLogId.current === null;
+        lastLogId.current = latestLog.id;
+        if (!isFirstSync) {
+          if (latestLog.kind === 'hit') playHitSound();
+          if (s.streak.count >= 3) playStreakSound();
+        }
+      }
 
       if (s.saying && s.saying.id !== lastSayingId.current) {
         lastSayingId.current = s.saying.id;

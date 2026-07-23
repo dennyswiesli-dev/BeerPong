@@ -36,12 +36,22 @@ export const addPlayer = (id: string, teamId: string, name: string) =>
 export const renameTeam = (id: string, teamId: string, name: string) =>
   mutate(id, (s) => logic.renameTeam(s, teamId, name));
 
+export const setTeamIcon = (id: string, teamId: string, icon: string) =>
+  mutate(id, (s) => logic.setTeamIcon(s, teamId, icon));
+
 export const setLayout = (id: string, layout: BoardLayout) => mutate(id, (s) => logic.setLayout(s, layout));
+
+export const setSpecialRule = (id: string, rule: string | null) =>
+  mutate(id, (s) => logic.setSpecialRule(s, rule));
+
+export const shuffleTeams = (id: string) => mutate(id, (s) => logic.shuffleTeams(s));
 
 export const coinToss = (id: string) => mutate(id, (s) => logic.coinToss(s));
 
-export const hitCup = (id: string, targetTeamId: string, cupId: string) =>
-  mutate(id, (s) => logic.hitCup(s, targetTeamId, cupId));
+export const hitCup = (id: string, targetTeamId: string, cupId: string, shooterName?: string) =>
+  mutate(id, (s) => logic.hitCup(s, targetTeamId, cupId, shooterName));
+
+export const undoLast = (id: string) => mutate(id, (s) => logic.undoLast(s));
 
 export const reformCups = (id: string, teamId: string, formation: number[]) =>
   mutate(id, (s) => logic.reformCups(s, teamId, formation));

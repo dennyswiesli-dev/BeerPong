@@ -74,6 +74,9 @@ export default function Home() {
         <Link to="/players" className="text-white/60 hover:text-red-500 underline underline-offset-4">
           👥 Spieler verwalten
         </Link>
+        <Link to="/tournament" className="text-white/60 hover:text-sky-400 underline underline-offset-4">
+          🥇 Turnier
+        </Link>
       </div>
     </div>
   );

@@ -9,7 +9,15 @@ async function ensurePlayer(name: string) {
   const ref = doc(playersCol, key(name));
   const snap = await getDoc(ref);
   if (!snap.exists()) {
-    const initial: PlayerStats = { name: name.trim(), wins: 0, losses: 0, gamesPlayed: 0, cupsHit: 0, shotsTaken: 0 };
+    const initial: PlayerStats = {
+      name: name.trim(),
+      wins: 0,
+      losses: 0,
+      gamesPlayed: 0,
+      cupsHit: 0,
+      shotsTaken: 0,
+      bestStreak: 0,
+    };
     await setDoc(ref, initial);
   }
   return ref;
@@ -33,6 +41,13 @@ export async function recordGameResult(winners: string[], losers: string[]) {
     const ref = await ensurePlayer(name);
     await updateDoc(ref, { losses: increment(1), gamesPlayed: increment(1) });
   }
+}
+
+export async function recordStreak(name: string, streak: number) {
+  const ref = await ensurePlayer(name);
+  const snap = await getDoc(ref);
+  const current = (snap.data() as PlayerStats | undefined)?.bestStreak ?? 0;
+  if (streak > current) await updateDoc(ref, { bestStreak: streak });
 }
 
 export async function getLeaderboard(): Promise<PlayerStats[]> {

@@ -3,15 +3,19 @@ import { QRCodeSVG } from 'qrcode.react';
 import * as sessionApi from '../lib/sessionApi';
 import { getLeaderboard } from '../lib/leaderboardApi';
 import { teamPalette } from '../lib/teamColors';
+import { randomSpecialRule } from '../lib/specialRules';
 import type { BoardLayout, SessionState } from '../types';
 
 interface Props {
   session: SessionState;
 }
 
+const TEAM_ICONS = ['🔵', '🔴', '🍺', '🍻', '🏆', '🔥', '⚡', '💀', '🐺', '🦅', '🎯', '👑'];
+
 export default function Lobby({ session }: Props) {
   const [names, setNames] = useState<Record<string, string>>({});
   const [roster, setRoster] = useState<string[]>([]);
+  const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
   const joinUrl = `${window.location.origin}${window.location.pathname}#/join/${session.id}`;
 
   useEffect(() => {
@@ -33,7 +37,21 @@ export default function Lobby({ session }: Props) {
     sessionApi.setLayout(session.id, layout);
   }
 
+  function pickIcon(teamId: string, icon: string) {
+    sessionApi.setTeamIcon(session.id, teamId, icon);
+    setIconPickerFor(null);
+  }
+
+  function shuffleTeams() {
+    sessionApi.shuffleTeams(session.id);
+  }
+
+  function drawSpecialRule() {
+    sessionApi.setSpecialRule(session.id, randomSpecialRule());
+  }
+
   const canStart = session.teams.every((t) => t.players.length > 0 || session.singleDeviceMode);
+  const totalPlayers = session.teams[0].players.length + session.teams[1].players.length;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
@@ -48,14 +66,38 @@ export default function Lobby({ session }: Props) {
         ))}
       </datalist>
 
-      <div className="grid sm:grid-cols-2 gap-6 mb-8">
+      <div className="grid sm:grid-cols-2 gap-6 mb-4">
         {session.teams.map((team) => (
           <div key={team.id} className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <input
-              defaultValue={team.name}
-              onBlur={(e) => renameTeam(team.id, e.target.value || team.name)}
-              className={`w-full text-xl font-black italic bg-transparent outline-none mb-3 ${teamPalette[team.color].text}`}
-            />
+            <div className="flex items-center gap-2 mb-3">
+              <button
+                onClick={() => setIconPickerFor(iconPickerFor === team.id ? null : team.id)}
+                className="text-2xl hover:scale-110 transition"
+                title="Icon wählen"
+              >
+                {team.icon}
+              </button>
+              <input
+                defaultValue={team.name}
+                onBlur={(e) => renameTeam(team.id, e.target.value || team.name)}
+                className={`flex-1 text-xl font-black italic bg-transparent outline-none ${teamPalette[team.color].text}`}
+              />
+            </div>
+
+            {iconPickerFor === team.id && (
+              <div className="flex flex-wrap gap-2 mb-3 bg-black/30 rounded-lg p-2">
+                {TEAM_ICONS.map((icon) => (
+                  <button
+                    key={icon}
+                    onClick={() => pickIcon(team.id, icon)}
+                    className="text-xl p-1 rounded hover:bg-white/10"
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <ul className="space-y-1 mb-4 min-h-8">
               {team.players.map((p) => (
                 <li key={p} className="text-white/80 text-sm">🙋 {p}</li>
@@ -81,6 +123,14 @@ export default function Lobby({ session }: Props) {
           </div>
         ))}
       </div>
+
+      {totalPlayers >= 2 && (
+        <div className="text-center mb-8">
+          <button onClick={shuffleTeams} className="text-xs text-white/50 hover:text-white underline underline-offset-4">
+            🎲 Teams zufällig neu mischen
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-6 items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-5 mb-8">
         <div>
@@ -108,6 +158,20 @@ export default function Lobby({ session }: Props) {
             <QRCodeSVG value={joinUrl} size={110} />
           </div>
         </div>
+      </div>
+
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-semibold">🎲 Sonderregel (optional)</h2>
+          <button onClick={drawSpecialRule} className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+            Auslosen
+          </button>
+        </div>
+        {session.specialRule ? (
+          <p className="text-sm text-white/70">{session.specialRule}</p>
+        ) : (
+          <p className="text-sm text-white/40 italic">Keine aktiv</p>
+        )}
       </div>
 
       <div className="text-center">

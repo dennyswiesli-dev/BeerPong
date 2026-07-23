@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as sessionApi from '../lib/sessionApi';
 import * as leaderboardApi from '../lib/leaderboardApi';
 import { formationOptions } from '../lib/formations';
@@ -8,6 +8,26 @@ import type { SessionState, Team } from '../types';
 
 interface Props {
   session: SessionState;
+}
+
+function formatElapsed(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function MatchTimer({ startedAt }: { startedAt: number | null }) {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!startedAt) return;
+    const interval = window.setInterval(() => setTick((t) => t + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, [startedAt]);
+
+  if (!startedAt) return null;
+  return <span className="font-mono text-white/50 text-sm">⏱ {formatElapsed(Date.now() - startedAt)}</span>;
 }
 
 export default function GameBoard({ session }: Props) {
@@ -20,7 +40,7 @@ export default function GameBoard({ session }: Props) {
 
   async function handleCupClick(targetTeam: Team, opponent: Team | undefined, cupId: string) {
     const shooter = shooterFor(targetTeam, opponent);
-    const next = await sessionApi.hitCup(session.id, targetTeam.id, cupId);
+    const next = await sessionApi.hitCup(session.id, targetTeam.id, cupId, shooter || undefined);
     if (!next) return;
     if (shooter) await leaderboardApi.recordShot(shooter, true);
     if (next.status === 'finished' && next.winnerTeamId) {
@@ -35,10 +55,33 @@ export default function GameBoard({ session }: Props) {
     setFormationPickerFor(null);
   }
 
+  function handleUndo() {
+    sessionApi.undoLast(session.id);
+  }
+
   const remaining = (team: Team) => team.cups.filter((c) => !c.hit).length;
 
   return (
     <div>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+        <MatchTimer startedAt={session.startedAt} />
+        <button
+          onClick={handleUndo}
+          disabled={!session.previousState}
+          className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed font-semibold"
+        >
+          ↩️ Rückgängig
+        </button>
+      </div>
+
+      {session.specialRule && (
+        <div className="text-center py-2 px-4">
+          <span className="inline-block px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 text-xs">
+            🎲 Sonderregel: {session.specialRule}
+          </span>
+        </div>
+      )}
+
       {session.streak.count >= 2 && (
         <div className="text-center py-2 animate-pop-in">
           <span className="inline-block px-4 py-1 rounded-full bg-amber-400/20 border border-amber-400/50 text-amber-200 text-sm font-semibold">
@@ -56,7 +99,9 @@ export default function GameBoard({ session }: Props) {
 
           return (
             <div key={team.id} className={`${palette.panelBg} px-4 py-6 min-h-[50vh] flex flex-col items-center`}>
-              <h3 className={`font-black italic text-xl tracking-tight ${palette.text} mb-1`}>{team.name}</h3>
+              <h3 className={`font-black italic text-xl tracking-tight ${palette.text} mb-1`}>
+                {team.icon} {team.name}
+              </h3>
               <p className="text-xs text-white/50 mb-2">{team.players.join(', ') || '—'}</p>
 
               <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Becher übrig</p>

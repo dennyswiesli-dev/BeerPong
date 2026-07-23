@@ -1,14 +1,11 @@
 rules_version = '2';
 
-// Party app with no login: anyone with the match code can read/write a session,
-// and anyone can update the shared leaderboard. Good enough for a casual game
-// with friends; do not store sensitive data here.
+// Party app with no login: anyone with the match code can read/write shared
+// game data (sessions, leaderboard, match history, tournaments). Good enough
+// for a casual game with friends; do not store sensitive data here.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /sessions/{sessionId} {
-      allow read, write: if true;
-    }
-    match /players/{playerId} {
+    match /{document=**} {
       allow read, write: if true;
     }
   }

@@ -34,14 +34,14 @@ export default function CoinTossOverlay({ session, onDone }: Props) {
               winnerPalette?.accentBg ?? 'bg-sky-500'
             }`}
           >
-            {winnerPalette?.label[0] ?? 'B'}
+            {winner?.icon ?? '🔵'}
           </div>
           <div
             className={`absolute inset-0 rounded-full border-4 border-white/30 flex items-center justify-center text-3xl font-black text-white [backface-visibility:hidden] [transform:rotateY(180deg)] ${
               loserPalette?.accentBg ?? 'bg-red-500'
             }`}
           >
-            {loserPalette?.label[0] ?? 'R'}
+            {loser?.icon ?? '🔴'}
           </div>
         </div>
       </div>

@@ -72,14 +72,16 @@ export default function Players() {
       {!loading && players.length > 0 && (
         <ul className="space-y-2">
           {players.map((p) => (
-            <li
-              key={p.name}
-              className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3"
-            >
-              <span className="font-semibold">{p.name}</span>
-              <span className="text-xs text-white/50">
-                {p.wins}S / {p.losses}N · {p.cupsHit} Treffer
-              </span>
+            <li key={p.name}>
+              <Link
+                to={`/players/${encodeURIComponent(p.name)}`}
+                className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 transition"
+              >
+                <span className="font-semibold">{p.name}</span>
+                <span className="text-xs text-white/50">
+                  {p.wins}S / {p.losses}N · {p.cupsHit} Treffer
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
