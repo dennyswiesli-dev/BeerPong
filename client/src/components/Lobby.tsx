@@ -9,7 +9,7 @@ interface Props {
 
 export default function Lobby({ session }: Props) {
   const [names, setNames] = useState<Record<string, string>>({});
-  const joinUrl = `${window.location.origin}/join/${session.id}`;
+  const joinUrl = `${window.location.origin}${window.location.pathname}#/join/${session.id}`;
 
   function addPlayer(teamId: string) {
     const name = names[teamId]?.trim();

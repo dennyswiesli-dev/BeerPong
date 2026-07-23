@@ -50,3 +50,15 @@ firebase deploy
 
 Danach ist die App unter der von Firebase ausgegebenen `https://<projekt-id>.web.app`-URL erreichbar –
 von jedem Gerät mit Internetzugang, auch unterwegs vom Handy.
+
+## Deployment (GitHub Pages)
+
+Für schnelles Testen ohne eigenes Firebase-Hosting-Deployment: Bei jedem Push auf `main` baut
+GitHub Actions (`.github/workflows/deploy-pages.yml`) die App automatisch und veröffentlicht sie
+auf GitHub Pages unter `https://dennyswiesli-dev.github.io/BeerPong/`.
+
+Einmalig einrichten: Im Repo unter **Settings → Pages** bei "Build and deployment" die Quelle auf
+**GitHub Actions** stellen. Danach läuft der Workflow automatisch bei jedem Push.
+
+Die Firebase-Konfigurationswerte liegen dafür in `client/.env.production` (Web-API-Keys sind nicht
+geheim, der Zugriff wird über die Firestore-Regeln geschützt).
