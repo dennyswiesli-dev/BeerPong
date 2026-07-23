@@ -46,6 +46,9 @@ export const hitCup = (id: string, targetTeamId: string, cupId: string) =>
 export const missShot = (id: string, shootingTeamId: string) =>
   mutate(id, (s) => logic.missShot(s, shootingTeamId));
 
-export const reformCups = (id: string, teamId: string) => mutate(id, (s) => logic.reformCups(s, teamId));
+export const reformCups = (id: string, teamId: string, formation: number[]) =>
+  mutate(id, (s) => logic.reformCups(s, teamId, formation));
 
 export const resetGame = (id: string) => mutate(id, (s) => logic.resetGame(s));
+
+export const rematch = (id: string) => mutate(id, (s) => logic.rematch(s));

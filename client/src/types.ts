@@ -1,5 +1,7 @@
 export type BoardLayout = 10 | 6;
 
+export type TeamColor = 'blue' | 'red';
+
 export interface Cup {
   id: string;
   index: number;
@@ -9,8 +11,10 @@ export interface Cup {
 export interface Team {
   id: string;
   name: string;
+  color: TeamColor;
   players: string[];
   cups: Cup[];
+  formationRows: number[];
   reformationUsed: boolean;
   score: number;
 }
@@ -37,6 +41,7 @@ export interface SessionState {
   status: SessionStatus;
   teams: [Team, Team];
   coinTossResult: string | null;
+  coinTossId: string | null;
   currentTeam: string | null;
   winnerTeamId: string | null;
   streak: StreakState;

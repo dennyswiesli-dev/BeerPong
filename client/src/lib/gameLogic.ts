@@ -1,4 +1,5 @@
 import type { BoardLayout, Cup, LogEntry, SessionState, Team } from '../types';
+import { triangleRows } from './formations';
 import { hitSayings, missSayings, pick, reformSayings, streakSayings, winSayings } from './sayings';
 
 function uid(): string {
@@ -9,8 +10,17 @@ function makeCups(count: number): Cup[] {
   return Array.from({ length: count }, (_, i) => ({ id: uid(), index: i, hit: false }));
 }
 
-function makeTeam(id: string, name: string, layout: BoardLayout): Team {
-  return { id, name, players: [], cups: makeCups(layout), reformationUsed: false, score: 0 };
+function makeTeam(id: string, name: string, color: 'blue' | 'red', layout: BoardLayout): Team {
+  return {
+    id,
+    name,
+    color,
+    players: [],
+    cups: makeCups(layout),
+    formationRows: triangleRows(layout),
+    reformationUsed: false,
+    score: 0,
+  };
 }
 
 export function createSession(layout: BoardLayout, singleDeviceMode: boolean): SessionState {
@@ -20,8 +30,9 @@ export function createSession(layout: BoardLayout, singleDeviceMode: boolean): S
     layout,
     singleDeviceMode,
     status: 'lobby',
-    teams: [makeTeam(uid(), 'Team 1', layout), makeTeam(uid(), 'Team 2', layout)],
+    teams: [makeTeam(uid(), 'Team Blau', 'blue', layout), makeTeam(uid(), 'Team Rot', 'red', layout)],
     coinTossResult: null,
+    coinTossId: null,
     currentTeam: null,
     winnerTeamId: null,
     streak: { teamId: null, count: 0 },
@@ -64,7 +75,9 @@ export function setLayout(session: SessionState, layout: BoardLayout): SessionSt
   const next = clone(session);
   next.layout = layout;
   next.teams[0].cups = makeCups(layout);
+  next.teams[0].formationRows = triangleRows(layout);
   next.teams[1].cups = makeCups(layout);
+  next.teams[1].formationRows = triangleRows(layout);
   return next;
 }
 
@@ -72,6 +85,7 @@ export function coinToss(session: SessionState): SessionState {
   const next = clone(session);
   const winner = next.teams[Math.floor(Math.random() * 2)];
   next.coinTossResult = winner.id;
+  next.coinTossId = uid();
   next.currentTeam = winner.id;
   next.status = 'playing';
   addLog(next, `${winner.name} beginnt das Spiel!`, 'info');
@@ -128,15 +142,17 @@ export function missShot(session: SessionState, shootingTeamId: string): Session
   return next;
 }
 
-export function reformCups(session: SessionState, teamId: string): SessionState {
+export function reformCups(session: SessionState, teamId: string, formation: number[]): SessionState {
   const next = clone(session);
   const team = next.teams.find((t) => t.id === teamId);
   if (!team) return session;
   const remaining = remainingCups(team);
   if (team.reformationUsed || remaining.length <= 2) return session;
+  if (formation.reduce((a, b) => a + b, 0) !== remaining.length) return session;
+
   team.reformationUsed = true;
-  const reindexed = remaining.map((c, i) => ({ ...c, index: i }));
-  team.cups = [...reindexed, ...team.cups.filter((c) => c.hit)];
+  team.cups = remaining.map((c, i) => ({ ...c, index: i, hit: false }));
+  team.formationRows = formation;
   addLog(next, `${team.name} formiert die Becher neu.`, 'reform');
   say(next, pick(reformSayings));
   return next;
@@ -146,12 +162,29 @@ export function resetGame(session: SessionState): SessionState {
   const next = clone(session);
   next.status = 'lobby';
   next.coinTossResult = null;
+  next.coinTossId = null;
   next.currentTeam = null;
   next.winnerTeamId = null;
   next.streak = { teamId: null, count: 0 };
   next.log = [];
   next.saying = null;
-  next.teams[0] = { ...next.teams[0], cups: makeCups(next.layout), reformationUsed: false, score: 0 };
-  next.teams[1] = { ...next.teams[1], cups: makeCups(next.layout), reformationUsed: false, score: 0 };
+  next.teams[0] = {
+    ...next.teams[0],
+    cups: makeCups(next.layout),
+    formationRows: triangleRows(next.layout),
+    reformationUsed: false,
+    score: 0,
+  };
+  next.teams[1] = {
+    ...next.teams[1],
+    cups: makeCups(next.layout),
+    formationRows: triangleRows(next.layout),
+    reformationUsed: false,
+    score: 0,
+  };
   return next;
+}
+
+export function rematch(session: SessionState): SessionState {
+  return coinToss(resetGame(session));
 }

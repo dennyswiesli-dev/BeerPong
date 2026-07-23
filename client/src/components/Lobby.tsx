@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import * as sessionApi from '../lib/sessionApi';
+import { teamPalette } from '../lib/teamColors';
 import type { BoardLayout, SessionState } from '../types';
 
 interface Props {
@@ -34,14 +35,12 @@ export default function Lobby({ session }: Props) {
       <p className="text-center text-purple-300 mb-8">Match-Code: <span className="font-mono text-amber-300">{session.id}</span></p>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-8">
-        {session.teams.map((team, i) => (
+        {session.teams.map((team) => (
           <div key={team.id} className="bg-white/5 border border-white/10 rounded-2xl p-5">
             <input
               defaultValue={team.name}
               onBlur={(e) => renameTeam(team.id, e.target.value || team.name)}
-              className={`w-full text-xl font-bold bg-transparent outline-none mb-3 ${
-                i === 0 ? 'text-red-300' : 'text-amber-300'
-              }`}
+              className={`w-full text-xl font-black italic bg-transparent outline-none mb-3 ${teamPalette[team.color].text}`}
             />
             <ul className="space-y-1 mb-4 min-h-8">
               {team.players.map((p) => (

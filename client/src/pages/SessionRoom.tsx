@@ -11,14 +11,17 @@ export default function SessionRoom() {
   const { id } = useParams<{ id: string }>();
   const { session, saying, winnerName, clearWinner } = useSession(id);
   const [showCoinToss, setShowCoinToss] = useState(false);
-  const prevStatus = useRef<string | null>(null);
+  const lastCoinTossId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!session) return;
-    if (prevStatus.current === 'lobby' && session.status === 'playing') {
+    if (!session || !session.coinTossId) return;
+    if (lastCoinTossId.current !== null && session.coinTossId !== lastCoinTossId.current) {
+      setShowCoinToss(true);
+    } else if (lastCoinTossId.current === null && session.status === 'playing') {
+      // joined mid-toss/right after it happened on another device; show it too
       setShowCoinToss(true);
     }
-    prevStatus.current = session.status;
+    lastCoinTossId.current = session.coinTossId;
   }, [session]);
 
   if (!session) {

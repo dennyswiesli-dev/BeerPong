@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addPlayer, getSession } from '../lib/sessionApi';
+import { teamPalette } from '../lib/teamColors';
 import type { SessionState } from '../types';
 
 export default function JoinSession() {
@@ -56,20 +57,23 @@ export default function JoinSession() {
 
         <p className="text-sm text-purple-300 mb-2 text-left">Team wählen</p>
         <div className="grid grid-cols-2 gap-3 mb-6">
-          {session.teams.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTeamId(t.id)}
-              className={`px-3 py-3 rounded-xl font-semibold border transition ${
-                teamId === t.id
-                  ? 'bg-amber-400 text-purple-950 border-amber-400'
-                  : 'bg-white/10 border-white/20 hover:bg-white/20'
-              }`}
-            >
-              {t.name}
-              <div className="text-xs opacity-70 font-normal mt-1">{t.players.join(', ') || 'noch niemand'}</div>
-            </button>
-          ))}
+          {session.teams.map((t) => {
+            const palette = teamPalette[t.color];
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTeamId(t.id)}
+                className={`px-3 py-3 rounded-xl font-semibold border transition ${
+                  teamId === t.id
+                    ? `${palette.accentBg} ${palette.accentText} border-transparent`
+                    : 'bg-white/10 border-white/20 hover:bg-white/20'
+                }`}
+              >
+                {t.name}
+                <div className="text-xs opacity-70 font-normal mt-1">{t.players.join(', ') || 'noch niemand'}</div>
+              </button>
+            );
+          })}
         </div>
 
         <button

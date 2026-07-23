@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { resetGame } from '../lib/sessionApi';
+import { rematch, resetGame } from '../lib/sessionApi';
 import type { SessionState } from '../types';
 
 interface Props {
@@ -20,7 +20,12 @@ export default function WinOverlay({ session, winnerName, onClose }: Props) {
     })();
   }, []);
 
-  function playAgain() {
+  function handleRematch() {
+    rematch(session.id);
+    onClose();
+  }
+
+  function handleBackToLobby() {
     resetGame(session.id);
     onClose();
   }
@@ -32,12 +37,20 @@ export default function WinOverlay({ session, winnerName, onClose }: Props) {
         {winnerName} gewinnt!
       </h2>
       <p className="text-purple-200">Glückwunsch – Zeit für die Siegerrunde 🍺</p>
-      <button
-        onClick={playAgain}
-        className="mt-4 px-8 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-pink-500 text-purple-950 font-bold shadow-xl hover:scale-105 active:scale-95 transition"
-      >
-        Neues Spiel
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3 mt-4">
+        <button
+          onClick={handleRematch}
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-pink-500 text-purple-950 font-bold shadow-xl hover:scale-105 active:scale-95 transition"
+        >
+          🔁 Revanche
+        </button>
+        <button
+          onClick={handleBackToLobby}
+          className="px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition"
+        >
+          Zurück zur Lobby
+        </button>
+      </div>
     </div>
   );
 }
